@@ -3,10 +3,28 @@ require('dotenv').config();
 const express     = require('express');
 const bodyParser  = require('body-parser');
 const cors        = require('cors');
-
+const mongoose    = require('mongoose')
+const helmet      = require('helmet')
 const apiRoutes         = require('./routes/api.js');
 const fccTestingRoutes  = require('./routes/fcctesting.js');
 const runner            = require('./test-runner');
+
+mongoose.Promise = global.Promise
+const dbName = 'stock-price-database'
+mongoose.connect(`${process.env.DB}${dbName}`, { useNewUrlParser: true })
+const db = mongoose.connection
+db.on('error', err => { console.error(err) })
+db.once('open', () => {
+  console.log('Connected to ' + dbName)
+})
+
+// Close MongoDB connection
+process.on('SIGINT', () => {
+  db.close(() => {
+    console.log(`Closing connection to ${dbName}`)
+    process.exit(0)
+  })
+})
 
 const app = express();
 
